@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>NightCare – Emergency Medical App</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="style.css">
+</head>      
+<body>
+<div id="app">
+  <!-- SPLASH -->
+  <section id="splash" class="screen active">
+    <div class="logo-circle">                   
+      <span>NC</span>
+    </div>                                           
+    <div class="app-name">NightCare</div>
+    <div class="app-tagline">
+      Emergency doctors, ambulances & first-aid help in just a few taps.
+    </div>
+  </section>
+            
+  <!-- ONBOARDING -->
+  <section id="onboarding" class="screen">
+    <div>
+      <div class="onboarding-slide active" data-index="0">
+        <div class="onboard-illustration">⏱️</div>
+        <div class="onboarding-title">Emergency help in minutes</div>
+        <div class="onboarding-sub">
+          Connect with nearest doctors & ambulances instantly when seconds matter.
+        </div>
+      </div>
+
+    <div class="onboarding-slide" data-index="1">
+        <div class="onboard-illustration">🌙</div>
+        <div class="onboarding-title">Night doctors available instantly</div>
+        <div class="onboarding-sub">
+          Verified night specialists on duty 24x7 for video or home visit.
+        </div>
+      </div>
+
+      <div class="onboarding-slide" data-index="2">
+        <div class="onboard-illustration">🚑</div>
+        <div class="onboarding-title">Book ambulance with live tracking</div>
+        <div class="onboarding-sub">
+          Real-time ambulance status, arrival estimate & hospital notification.
+        </div>
+      </div>
+
+      <div class="dots">
+        <div class="dot active"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+      </div>
+    </div>
+
+    <div class="bottom-actions">
+      <button id="nextSlideBtn" class="btn btn-outline full-width margin-bottom-8">
+        Next
+      </button>
+      <button id="getStartedBtn" class="btn btn-primary full-width">
+        Get Started
+      </button>
+    </div>
+  </section>
+
+  <!-- LOGIN / SIGNUP -->
+  <section id="auth" class="screen">
+    <div class="screen-header">
+      <button class="back-btn" onclick="showScreen('onboarding')">←</button>
+      <div>
+        <div class="screen-title">Login / Signup</div>
+        <div class="screen-subtitle">Enter your mobile number to continue.</div>
+      </div>
+    </div>
+    <div class="card">
+      <form id="authForm">
+        <div class="field">
+          <label>Mobile Number</label>
+          <input type="tel" id="phone" placeholder="+91 98765 43210" required />
+        </div>
+        <div class="field">
+          <label>OTP</label>
+          <input type="number" id="otp" placeholder="6-digit OTP" required />
+        </div>
+        <button type="submit" class="btn btn-primary margin-top-4">
+          Continue
+        </button>
+      </form>
+    </div>
+    <div class="screen-subtitle">
+      By continuing, you agree to emergency alerts & healthcare notifications.
+    </div>
+  </section>
+
+  <!-- HOME -->
+  <section id="home" class="screen">
+    <div class="screen-header space-between">
+      <div>
+        <div class="greeting">Hi, User 👋</div>
+        <div class="subtitle">How can we help you right now?</div>
+      </div>
+      <button class="back-btn" onclick="showScreen('settings')">⚙️</button>
+    </div>
+
+    <div class="quick-actions">
+      <div class="quick-card" onclick="showScreen('emergency')">
+        <div class="quick-card-icon">🚨</div>
+        <div class="quick-card-title">Emergency Help</div>
+        <div class="quick-card-sub">Symptoms, nearest doctor & ambulance</div>
+      </div>
+      <div class="quick-card" onclick="showScreen('symptoms')">
+        <div class="quick-card-icon">🧠</div>
+        <div class="quick-card-title">AI Symptom Checker</div>
+        <div class="quick-card-sub">Smart severity & urgency level</div>
+      </div>
+      <div class="quick-card" onclick="showScreen('nightDoctors')">
+        <div class="quick-card-icon">🌙</div>
+        <div class="quick-card-title">Night Doctors</div>
+        <div class="quick-card-sub">Available 24x7 for video / visit</div>
+      </div>
+      <div class="quick-card" onclick="showScreen('hospitals')">
+        <div class="quick-card-icon">🏥</div>
+        <div class="quick-card-title">Hospital Rush</div>
+        <div class="quick-card-sub">Waiting time & ICU availability</div>
+      </div>
+    </div>
+
+    <div class="section-title-row">
+      <h3>Live Ambulance</h3>
+      <span class="chip" onclick="showScreen('ambulance')">View all</span>
+    </div>
+    <div class="card">
+      <div class="map-box">
+        <div class="map-road"></div>
+        <div class="map-ambulance" id="homeAmbulance">🚑</div>
+        <div class="map-pin"></div>
+        <div class="map-label">3 min away · Night ambulance</div>
+      </div>
+      <button class="btn btn-primary full-width" onclick="showScreen('ambulance')">
+        Book Ambulance
+      </button>
+    </div>
+
+    <div class="section-title-row">
+      <h3>Nearby night doctors</h3>
+      <button class="btn-text" onclick="showScreen('nightDoctors')">See all</button>
+    </div>
+    <div class="horizontal-list">
+      <div class="doc-card" onclick="openDoctorProfile('Dr. Aditi Rao')">
+        <div class="doc-name">Dr. Aditi Rao</div>
+        <div class="doc-meta">Emergency Physician · 1.2 km</div>
+        <div><span class="tag">⭐ 4.9</span><span class="tag">On duty</span></div>
+      </div>
+      <div class="doc-card" onclick="openDoctorProfile('Dr. Karan Mehta')">
+        <div class="doc-name">Dr. Karan Mehta</div>
+        <div class="doc-meta">Cardiologist · 2.1 km</div>
+        <div><span class="tag">⭐ 4.8</span><span class="tag">Night shift</span></div>
+      </div>
+      <div class="doc-card" onclick="openDoctorProfile('Dr. Sana Ali')">
+        <div class="doc-name">Dr. Sana Ali</div>
+        <div class="doc-meta">Pediatrics · 900 m</div>
+        <div><span class="tag">⭐ 4.7</span><span class="tag">Online</span></div>
+      </div>
+    </div>
+
+    <div class="section-title-row">
+      <h3>Quick tools</h3>
+    </div>
+    <div class="pill-row">
+      <div class="pill" onclick="showScreen('firstAid')">First Aid Tips</div>
+      <div class="pill" onclick="showScreen('blood')">Blood Availability</div>
+      <div class="pill" onclick="showScreen('videoConsult')">Video Consultation</div>
+      <div class="pill" onclick="showScreen('profile')">My Profile</div>
+    </div>
+  </section>
+
+  <!-- EMERGENCY SCREEN -->
+  <section id="emergency" class="screen">
+    <div class="screen-header">
+      <button class="back-btn" onclick="showScreen('home')">←</button>
+      <div>
+        <div class="screen-title">Emergency Help</div>
+        <div class="screen-subtitle">
+          Select symptoms or directly book ambulance & nearest doctor.
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="small-label">Common Symptoms</div>
+      <div class="symptom-list" id="emergencySymptomList">
+        <div class="symptom-chip">Chest pain</div>
+        <div class="symptom-chip">Breathing difficulty</div>
+        <div class="symptom-chip">Severe bleeding</div>
+        <div class="symptom-chip">Unconscious</div>
+        <div class="symptom-chip">High fever</div>
+        <div class="symptom-chip">Stroke symptoms</div>
+        <div class="symptom-chip">Accident trauma</div>
+      </div>
+
+      <div class="two-col margin-top-8">
+        <button class="btn btn-primary" onclick="nearestDoctor()">
+          Nearest Doctor
+        </button>
+        <button class="btn btn-outline" onclick="showScreen('ambulance')">
+          Book Ambulance
+        </button>
+      </div>
+    </div>
+
+    <div class="card margin-top-10">
+      <div class="small-label">AI quick check</div>
+      <textarea id="emergencyDescribe" placeholder="eg. Chest pain + sweating + nausea"></textarea>
+      <button class="btn btn-primary full-width" onclick="runSymptomChecker('emergencyDescribe','emergencyResult')">
+        Analyse Symptoms
+      </button>
+      <div id="emergencyResult" class="result-box hide"></div>
+    </div>
+  </section>
+
+  <!-- SYMPTOMS SELECTION / AI SYMPTOM CHECKER -->
+  <section id="symptoms" class="screen">
+    <div class="screen-header">
+      <button class="back-btn" onclick="showScreen('home')">←</button>
+      <div>
+        <div class="screen-title">AI Symptom Checker</div>
+        <div class="screen-subtitle">
+          Type or speak your symptoms. We’ll estimate severity & urgency.
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <textarea id="symptomInput" placeholder="Example: chest pain, sweating, shortness of breath"></textarea>
+      <button class="btn btn-primary full-width" onclick="runSymptomChecker('symptomInput','symptomResult')">
+        Smart Diagnosis
+      </button>
+      <button class="btn btn-outline full-width margin-top-6" onclick="simulateVoiceInput()">
+        🎙️ Voice input (demo)
+      </button>
+      <div id="symptomResult" class="result-box hide"></div>
+    </div>
+  </section>
+
+  <!-- NIGHT DOCTORS -->
+  <section id="nightDoctors" class="screen">
+    <div class="screen-header">
+      <button class="back-btn" onclick="showScreen('home')">←</button>
+      <div>
+        <div class="screen-title">Night Doctors</div>
+        <div class="screen-subtitle">
+          Filter by speciality & consult instantly.
+        </div>
+      </div>
+    </div>
+
+    <div class="filter-row">
+      <select id="specialityFilter" onchange="filterDoctors()">
+        <option value="all">All specialities</option>
+        <option value="emergency">Emergency</option>
+        <option value="cardio">Cardiology</option>
+        <option value="pediatrics">Pediatrics</option>
+      </select>
+    </div>
+
+    <div id="nightDoctorList">
+      <div class="doc-card" data-spec="emergency" onclick="openDoctorProfile('Dr. Aditi Rao')">
+        <div class="doc-name">Dr. Aditi Rao</div> 
+        <div class="doc-meta">Emergency Physician · 1.2 km</div>
+        <div>
+          <span class="tag">⭐ 4.9</span> 
+          <span class="tag">Live · <span class="green-text">Available</span></span>
+        </div>
+      </div>
+
+      <div class="doc-card" data-spec="cardio" onclick="openDoctorProfile('Dr. Karan Mehta')">
+        <div class="doc-name">Dr. Karan Mehta</div>
+        <div class="doc-meta">Cardiologist · 2.1 km</div>
+        <div>
+          <span class="tag">⭐ 4.8</span>
+          <span class="tag">On call</span>
+        </div>
+      </div>
+
+      <div class="doc-card" data-spec="pediatrics" onclick="openDoctorProfile('Dr. Sana Ali')">
+        <div class="doc-name">Dr. Sana Ali</div>
+        <div class="doc-meta">Pediatrics · 900 m</div>
+        <div>
+          <span class="tag">⭐ 4.7</span>
+          <span class="tag">Video consult</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- HOSPITAL AVAILABILITY -->
+  <section id="hospitals" class="screen">
+    <div class="screen-header">
+      <button class="back-btn" onclick="showScreen('home')">←</button>
+      <div>
+        <div class="screen-title">Hospitals Nearby</div>
+        <div class="screen-subtitle">
+          Live rush, ICU & emergency status.
+        </div>
+      </div>
+    </div>
+
+    <div class="map-box margin-bottom-16">
+      <div class="map-road"></div>
+      <div class="map-pin top35-right32"></div>
+      <div class="map-pin top55-right15 red-pin"></div>
+      <div class="map-label">Tap any hospital below to navigate</div>
+    </div>
+
+    <div class="hospital-card">
+      <div class="doc-name">CityCare Multispeciality</div>
+      <div class="hospital-meta">1.3 km · 24x7 Emergency</div>
+      <div class="margin-bottom-4">
+        <span class="status-pill status-low">Waiting ~ 10 min</span>
+        <span class="status-pill status-low">Crowd: Low</span>
+      </div>
+      <div class="hospital-meta">ICU: 4 beds free · ER open</div>
+    </div>
+
+    <div class="hospital-card margin-top-10">
+      <div class="doc-name">statusMetro Heart Institute</div>
+      <div class="hospital-meta">2.5 km · Cathlab</div>
+      <div class="margin-bottom-4">
+        <span class="-pill status-med">Waiting ~ 25 min</span>
+        <span class="status-pill status-med">Crowd: Medium</span>
+      </div>
+      <div class="hospital-meta">ICU: 1 bed free · ER open</div>
+    </div>
+
+    <div class="hospital-card margin-top-10">
+      <div class="doc-name">Govt. Trauma Center</div>
+      <div class="hospital-meta">3.8 km · Trauma & burns</div>
+      <div class="margin-bottom-4">
+        <span class="status-pill status-high">Waiting ~ 50 min</span>
+        <span class="status-pill status-high">Crowd: High</span>
+      </div>
+      <div class="hospital-meta">ICU: Full · ER diverting</div>
+    </div>
+  </section>
+
+  <!-- AMBULANCE BOOKING -->
+  <section id="ambulance" class="screen">
+    <div class="screen-header">
+      <button class="back-btn" onclick="showScreen('home')">←</button>
+      <div>
+        <div class="screen-title">Ambulance Booking</div>
+        <div class="screen-subtitle">
+          Live GPS & ETA from nearby ambulances.
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="map-box">
+        <div class="map-road"></div>
+        <div class="map-ambulance" id="ambAmbulance">🚑</div>
+        <div class="map-pin"></div>
+        <div class="map-label" id="etaLabel">ETA: 5–7 min</div>
+      </div>
+
+      <div class="field">
+        <label>Pickup Location</label>
+        <input type="text" placeholder="Use current location" />
+      </div>
+      <div class="field">
+        <label>Destination Hospital (optional)</label>
+        <input type="text" placeholder="CityCare, Metro Heart..." />
+      </div>
+
+      <button class="btn btn-primary full-width" onclick="bookAmbulance()">
+        Book Ambulance
+      </button>
+      <div class="screen-subtitle margin-top-6">
+        After booking, location will auto-share with ambulance & family.
+      </div>
+    </div>
+  </section> 
+
+  <!-- DOCTOR PROFILE -->
+
+  <section id="doctorProfile" class="screen">
+    <div class="screen-header">
+      <button class="back-btn" onclick="showScreen('nightDoctors')">←</button>
+      <div>
+        <div class="screen-title" id="docProfileName">Doctor Profile</div>
+        <div class="screen-subtitle">Night specialist details & booking.</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="doc-header">
+        <div class="avatar" id="docInitials">DR</div>
+        <div>
+          <div class="doc-name" id="docFullName">Dr. Aditi Rao</div>
+          <div class="doc-meta">MBBS, MD Emergency Medicine</div>
+          <div class="doc-meta">Experience: 9+ years · ⭐ 4.9</div>
+        </div>
+      </div>
+      <div class="small-label">Key Skills</div>
+      <ul>
+        <li>Cardiac & stroke emergency stabilization</li>
+        <li>Advanced life support, CPR & airway management</li>
+        <li>Trauma & accident triage</li>
+      </ul>
+      <div class="small-label margin-top-8">Live status</div>
+      <div class="pill-row">
+        <div class="pill active">On duty</div>
+        <div class="pill">Video consult in 5 min</div>
+        <div class="pill">Clinic visit in 30 min</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="small-label">Choose slot</div>
+      <div class="radio-row" id="slotRow">
+        <div class="radio-chip active">Within 15 min</div>
+        <div class="radio-chip">Tonight (9–11 PM)</div>
+        <div class="radio-chip">Tomorrow morning</div>
+      </div>
+
+      <div class="small-label">Mode of consultation</div>
+      <div class="radio-row" id="modeRow">
+        <div class="radio-chip active">Video</div>
+        <div class="radio-chip">Clinic</div>
+        <div class="radio-chip">Home visit</div>
+      </div>
+
+      <button class="btn btn-primary full-width" onclick="goToBookingSummary()">
+        Continue to Booking Summary
+      </button>
+    </div>   
+  </section>  
+  
+  <!-- BOOKING SUMMARY -->
+  <section id="bookingSummary" class="screen">
+    <div class="screen-header">
+      <button class="back-btn" onclick="showScreen('doctorProfile')">←</button>
+      <div>
+        <div class="screen-title">Booking Summary</div>
+        <div class="screen-subtitle">Confirm appointment & payment mode.</div>
+      </div>
+    </div>
+
+    <div class="card" id="summaryInfo">  
+      <!-- Filled via JS -->
+    </div>  
+             
+
+
+    <div class="card">
+      <div class="small-label">Payment Options</div>
+      <div class="radio-row" id="paymentRow">
+        <div class="radio-chip active">UPI</div>
+        <div class="radio-chip">Card</div>
+        <div class="radio-chip">Cash at clinic</div>
+      </div>
+
+      <button class="btn btn-primary full-width" onclick="showScreen('payment')">
+        Proceed to Payment
+      </button>
+    </div>
+  </section>
+
+  <!-- PAYMENT -->
+  <section id="payment" class="screen">
+    <div class="screen-header">
+      <button class="back-btn" onclick="showScreen('bookingSummary')">←</button>
+      <div>
+        <div class="screen-title">Payment</div>
+        <div class="screen-subtitle">
+          Secure payment for your consultation.
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="small-label">Amount</div>
+      <div class="payment-amount">
+        ₹ 699 <span class="payment-caption">Night emergency consult</span>
+      </div>
+
+      <div class="field">
+        <label>UPI ID</label>
+        <input type="text" placeholder="yourname@upi" />
+      </div>
+      <button class="btn btn-primary full-width" onclick="completePayment()">
+        Pay Now
+      </button>
+      <div class="screen-subtitle margin-top-6">
+        You’ll receive confirmation & e-prescription after payment.
+      </div>
+    </div>
+  </section>   
+
+  <!-- FIRST AID TIPS -->
+  <section id="firstAid" class="screen">
+    <div class="screen-header">
+      <button class="back-btn" onclick="showScreen('home')">←</button>
+      <div>
+        <div class="screen-title">First Aid Tips</div>
+        <div class="screen-subtitle">
+          Quick steps before medical help arrives.
+        </div>
+      </div>
+    </div>
+
+    <div class="first-aid-grid">
+      <div class="first-aid-card">
+        <div class="first-aid-icon">❤️‍🩹</div>
+        <div class="first-aid-title">CPR (Adults)</div>
+        <ul class="first-aid-steps">
+          <li>Check response & breathing.</li>
+          <li>Call emergency number / use SOS.</li>
+          <li>Push hard & fast in center of chest.</li>
+          <li>Rate: 100–120 compressions/min.</li>
+        </ul>
+      </div>
+
+      <div class="first-aid-card">
+        <div class="first-aid-icon">🔥</div>
+        <div class="first-aid-title">Burns</div>
+        <ul class="first-aid-steps">
+          <li>Cool burn under running water (20 min).</li>
+          <li>Do NOT apply ice or toothpaste.</li>
+          <li>Cover with clean, non-stick cloth.</li>
+        </ul>
+      </div>
+
+      <div class="first-aid-card">
+        <div class="first-aid-icon">🩸</div>
+        <div class="first-aid-title">Severe Bleeding</div>
+        <ul class="first-aid-steps">
+          <li>Apply firm pressure with clean cloth.</li>
+          <li>Keep injured part elevated if possible.</li>
+          <li>Do not remove soaked dressings, add more.</li>
+        </ul>
+      </div>
+
+      <div class="first-aid-card">
+        <div class="first-aid-icon">🤕</div>
+        <div class="first-aid-title">Head Injury</div>
+        <ul class="first-aid-steps">
+          <li>Keep person still, support neck.</li>
+          <li>Watch for vomiting, confusion, drowsiness.</li>
+          <li>Seek urgent medical care.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- BLOOD AVAILABILITY -->
+  <section id="blood" class="screen">
+    <div class="screen-header">
+      <button class="back-btn" onclick="showScreen('home')">←</button>
+      <div>
+        <div class="screen-title">Blood Availability</div>
+        <div class="screen-subtitle">
+          Real-time blood group status from nearby banks (demo).
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="field">
+        <label>Required blood group</label>
+        <select id="bloodGroup">
+          <option>A+</option>
+          <option>A-</option>
+          <option>B+</option>
+          <option>B-</option>
+          <option>O+</option>
+          <option>O-</option>
+          <option>AB+</option>
+          <option>AB-</option>
+        </select>
+      </div>
+      <button class="btn btn-primary full-width margin-top-6" onclick="checkBloodAvailability()">
+        Check Availability
+      </button>
+      <div id="bloodResult" class="result-box hide"></div>
+      <button class="btn btn-outline full-width margin-top-8" onclick="alert('Emergency blood request sent to nearby banks & donors (demo).');">
+        Emergency blood request
+      </button>
+    </div>
+  </section>
+  
+  <!-- VIDEO CONSULT -->
+  <section id="videoConsult" class="screen">
+    <div class="screen-header">
+      <button class="back-btn" onclick="showScreen('home')">←</button>
+      <div>
+        <div class="screen-title">Live Video Consultation</div>
+        <div class="screen-subtitle">
+          If no nearby doctor is free, we auto-connect to 24x7 online doctor.
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="small-label">Connection status</div>
+      <div class="result-box" id="videoStatus">
+        Searching for available online doctors…
+      </div>
+      <button class="btn btn-primary full-width margin-top-8" onclick="simulateVideoConnect()">
+        Connect Now
+      </button>
+    </div>
+  </section>
+
+  <!-- PROFILE -->
+  <section id="profile" class="screen">
+    <div class="screen-header">
+      <button class="back-btn" onclick="showScreen('home')">←</button>
+      <div>
+        <div class="screen-title">User Profile</div>
+        <div class="screen-subtitle">
+          Health ID & family monitoring overview.
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="doc-header">
+        <div class="avatar">U</div>
+        <div>
+          <div class="doc-name">User Name</div>
+          <div class="doc-meta">ABHA ID: 1234-5678-9012</div>
+          <div class="doc-meta">Primary contact: +91-98765 43210</div>
+        </div>
+      </div>
+      <div class="small-label">Linked family</div>
+      <ul>
+        <li>👴 Grandfather – BP, cardiac alerts</li>
+        <li>👵 Grandmother – Sugar & fall detection</li>
+        <li>👶 Child – Fever & asthma monitoring</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="small-label">After-care monitoring</div>
+      <ul>
+        <li>Medicine reminders – ON</li>
+        <li>Follow-up call – Tomorrow 10:30 AM</li>
+        <li>Diet & symptom tracking – Active</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- SETTINGS -->
+  <section id="settings" class="screen">
+    <div class="screen-header">
+      <button class="back-btn" onclick="showScreen('home')">←</button>
+      <div>
+        <div class="screen-title">Settings</div>
+        <div class="screen-subtitle">
+          SOS, history, payments & dark mode.
+        </div>
+      </div>
+    </div>
+
+    <div class="settings-list">
+      <div class="settings-item">
+        <span>SOS one-tap emergency</span>
+        <div class="toggle on" onclick="this.classList.toggle('on');">
+          <div class="toggle-knob"></div>
+        </div>
+      </div>
+
+      <div class="settings-item">
+        <span>Share live location with family</span>
+        <div class="toggle on" onclick="this.classList.toggle('on');">
+          <div class="toggle-knob"></div>
+        </div>
+      </div>
+
+      <div class="settings-item">
+        <span>Dark mode</span>
+        <div class="toggle" id="darkToggle" onclick="toggleDarkMode()">
+          <div class="toggle-knob"></div>
+        </div>
+      </div>
+
+      <div class="settings-item">
+        <span>Payment methods</span>
+        <button class="btn-text" onclick="alert('Add / manage UPI & cards (demo).');">Manage</button>
+      </div>
+
+      <div class="settings-item">
+        <span>Emergency history</span>
+        <button class="btn-text" onclick="alert('Show past emergencies & consultations (demo).');">View</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- FLOATING SOS BUTTON -->
+  <button class="sos-btn" onclick="triggerSOS()">
+    <div class="sos-pulse"></div>
+    SOS
+  </button>
+
+  <!-- BOTTOM NAV -->
+  <div class="bottom-nav">
+    <div class="bottom-nav-inner">
+      <div class="nav-item active" data-target="home" onclick="navTo(this)">
+        <span>🏠</span>Home
+      </div>
+      <div class="nav-item" data-target="emergency" onclick="navTo(this)">
+        <span>🚨</span>Emergency
+      </div>
+      <div class="nav-item" data-target="hospitals" onclick="navTo(this)">
+        <span>🏥</span>Hospitals
+      </div>
+      <div class="nav-item" data-target="profile" onclick="navTo(this)">
+        <span>👤</span>Profile
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="script.js" defer></script>
+</body>
+</html>
