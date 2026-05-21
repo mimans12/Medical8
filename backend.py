@@ -20,7 +20,7 @@ def get_db_connection():
 
 
 # ==========================
-# DATABASE INIT
+# DATABASE SETUP
 # ==========================
 def init_db():
     conn = get_db_connection()
@@ -58,7 +58,7 @@ def init_db():
         )
     """)
 
-    # BLOOD BANKS
+    # BLOOD BANK TABLE
     cur.execute("""
         CREATE TABLE IF NOT EXISTS blood_banks (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -69,9 +69,7 @@ def init_db():
         )
     """)
 
-    # ==========================
     # SEED DOCTORS
-    # ==========================
     cur.execute(
         "SELECT COUNT(*) as count FROM doctors"
     )
@@ -80,22 +78,22 @@ def init_db():
         doctors = [
             (
                 "Dr. Aditi Rao",
-                "emergency",
+                "Emergency",
                 4.9,
                 1.2
             ),
             (
                 "Dr. Karan Mehta",
-                "cardio",
+                "Cardio",
                 4.8,
                 2.1
             ),
             (
                 "Dr. Sana Ali",
-                "pediatrics",
+                "Trauma & Accident",
                 4.7,
                 0.9
-            ),
+            )
         ]
 
         cur.executemany("""
@@ -108,12 +106,11 @@ def init_db():
             VALUES (?, ?, ?, ?)
         """, doctors)
 
-    # ==========================
     # SEED BLOOD BANKS
-    # ==========================
-    cur.execute(
-        "SELECT COUNT(*) as count FROM blood_banks"
-    )
+    cur.execute("""
+        SELECT COUNT(*) as count
+        FROM blood_banks
+    """)
 
     if cur.fetchone()["count"] == 0:
         blood_rows = [
@@ -124,29 +121,17 @@ def init_db():
                 2.1
             ),
             (
-                "City Blood Center",
-                "O+",
-                4,
-                2.1
-            ),
-            (
                 "Metro Blood Bank",
                 "A+",
                 3,
                 3.4
             ),
             (
-                "Metro Blood Bank",
+                "Govt Blood Bank",
                 "O+",
-                2,
-                3.4
-            ),
-            (
-                "Govt. Blood Bank",
-                "A+",
-                0,
-                4.1
-            ),
+                5,
+                1.8
+            )
         ]
 
         cur.executemany("""
@@ -170,9 +155,9 @@ class ApiHandler(
     BaseHTTPRequestHandler
 ):
 
-    # -----------------------
+    # ----------------------
     # CORS
-    # -----------------------
+    # ----------------------
     def _set_cors_headers(self):
         self.send_header(
             "Access-Control-Allow-Origin",
@@ -189,9 +174,9 @@ class ApiHandler(
             "Content-Type"
         )
 
-    # -----------------------
-    # SEND JSON RESPONSE
-    # -----------------------
+    # ----------------------
+    # SEND JSON
+    # ----------------------
     def send_json(
         self,
         data,
@@ -218,9 +203,9 @@ class ApiHandler(
         self.end_headers()
         self.wfile.write(response)
 
-    # -----------------------
-    # READ BODY
-    # -----------------------
+    # ----------------------
+    # READ JSON BODY
+    # ----------------------
     def read_json_body(self):
         length = int(
             self.headers.get(
@@ -242,16 +227,39 @@ class ApiHandler(
         except json.JSONDecodeError:
             return {}
 
-    # -----------------------
+    # ----------------------
     # OPTIONS
-    # -----------------------
+    # ----------------------
     def do_OPTIONS(self):
         self.send_response(200)
         self._set_cors_headers()
         self.end_headers()
 
     # ==========================
-    # POST ROUTES
+    # GET APIs
+    # ==========================
+    def do_GET(self):
+        path = urlparse(
+            self.path
+        ).path
+
+        if path == "/api/doctors":
+            self.handle_doctors()
+
+        elif path == "/api/users":
+            self.handle_users()
+
+        elif path == "/api/bookings":
+            self.handle_bookings()
+
+        else:
+            self.send_json({
+                "error":
+                "Not found"
+            }, status=404)
+
+    # ==========================
+    # POST APIs
     # ==========================
     def do_POST(self):
         path = urlparse(
@@ -269,7 +277,7 @@ class ApiHandler(
                 self.handle_ambulance_book,
 
             "/api/blood/check":
-                self.handle_blood_check,
+                self.handle_blood_check
         }
 
         handler = routes.get(path)
@@ -277,33 +285,10 @@ class ApiHandler(
         if handler:
             handler()
         else:
-            self.send_json(
-                {"error": "Not found"},
-                status=404
-            )
-
-    # ==========================
-    # GET ROUTES
-    # ==========================
-    def do_GET(self):
-        path = urlparse(
-            self.path
-        ).path
-
-        if path == "/api/doctors":
-            self.handle_doctors()
-
-        elif path == "/api/users":
-            self.handle_users()
-
-        elif path == "/api/bookings":
-            self.handle_bookings()
-
-        else:
-            self.send_json(
-                {"error": "Not found"},
-                status=404
-            )
+            self.send_json({
+                "error":
+                "Not found"
+            }, status=404)
 
     # ==========================
     # LOGIN
@@ -312,34 +297,24 @@ class ApiHandler(
         data = self.read_json_body()
 
         phone = str(
-            data.get("phone", "")
+            data.get(
+                "phone",
+                ""
+            )
         ).strip()
 
         otp = str(
-            data.get("otp", "")
+            data.get(
+                "otp",
+                ""
+            )
         ).strip()
 
         if not phone or not otp:
-            self.send_json(
-                {
-                    "error":
-                    "phone and otp required"
-                },
-                status=400
-            )
-            return
-
-        if (
-            len(otp) != 6
-            or not otp.isdigit()
-        ):
-            self.send_json(
-                {
-                    "error":
-                    "OTP must be 6 digits"
-                },
-                status=400
-            )
+            self.send_json({
+                "error":
+                "phone and otp required"
+            }, status=400)
             return
 
         conn = get_db_connection()
@@ -354,10 +329,7 @@ class ApiHandler(
         conn.commit()
 
         cur.execute("""
-            SELECT
-                id,
-                phone,
-                created_at
+            SELECT *
             FROM users
             WHERE phone = ?
         """, (phone,))
@@ -366,8 +338,10 @@ class ApiHandler(
         conn.close()
 
         self.send_json({
-            "status": "ok",
-            "user": dict(row)
+            "status":
+            "ok",
+            "user":
+            dict(row)
         })
 
     # ==========================
@@ -385,13 +359,6 @@ class ApiHandler(
             )
         ).lower()
 
-        if not text.strip():
-            self.send_json({
-                "error":
-                "description required"
-            }, status=400)
-            return
-
         severity = "mild"
         urgency = "normal"
         problem = (
@@ -399,35 +366,27 @@ class ApiHandler(
         )
 
         recommendation = (
-            "Rest and hydrate."
+            "Drink water & rest."
         )
 
-        if any(word in text
-               for word in [
-                   "chest",
-                   "stroke",
-                   "unconscious"
-               ]):
+        if "fever" in text:
+            severity = "moderate"
+            problem = (
+                "Fever / infection"
+            )
+
+        elif (
+            "chest" in text
+            or "stroke" in text
+        ):
             severity = "critical"
             urgency = "emergency"
             problem = (
                 "Possible cardiac emergency"
             )
+
             recommendation = (
                 "Call ambulance immediately."
-            )
-
-        elif (
-            "fever" in text
-            or "temperature" in text
-        ):
-            severity = "moderate"
-            urgency = "normal"
-            problem = (
-                "Fever / infection"
-            )
-            recommendation = (
-                "Take medicine & rest."
             )
 
         self.send_json({
@@ -457,14 +416,12 @@ class ApiHandler(
         rows = cur.fetchall()
         conn.close()
 
-        doctors = [
-            dict(row)
-            for row in rows
-        ]
-
         self.send_json({
             "doctors":
-                doctors
+            [
+                dict(row)
+                for row in rows
+            ]
         })
 
     # ==========================
@@ -483,18 +440,16 @@ class ApiHandler(
         rows = cur.fetchall()
         conn.close()
 
-        users = [
-            dict(row)
-            for row in rows
-        ]
-
         self.send_json({
             "users":
-                users
+            [
+                dict(row)
+                for row in rows
+            ]
         })
 
     # ==========================
-    # AMBULANCE BOOK
+    # AMBULANCE BOOKING
     # ==========================
     def handle_ambulance_book(
         self
@@ -522,13 +477,6 @@ class ApiHandler(
             )
         ).strip()
 
-        if not pickup:
-            self.send_json({
-                "error":
-                "pickup required"
-            }, status=400)
-            return
-
         conn = get_db_connection()
         cur = conn.cursor()
 
@@ -554,10 +502,12 @@ class ApiHandler(
         conn.close()
 
         self.send_json({
-            "status": "ok",
+            "status":
+            "ok",
             "booking_id":
-                booking_id,
-            "eta_minutes": 5
+            booking_id,
+            "eta_minutes":
+            5
         })
 
     # ==========================
@@ -576,14 +526,12 @@ class ApiHandler(
         rows = cur.fetchall()
         conn.close()
 
-        bookings = [
-            dict(row)
-            for row in rows
-        ]
-
         self.send_json({
             "bookings":
-                bookings
+            [
+                dict(row)
+                for row in rows
+            ]
         })
 
     # ==========================
@@ -599,14 +547,7 @@ class ApiHandler(
                 "blood_group",
                 ""
             )
-        ).strip().upper()
-
-        if not group:
-            self.send_json({
-                "error":
-                "blood_group required"
-            }, status=400)
-            return
+        ).upper()
 
         conn = get_db_connection()
         cur = conn.cursor()
@@ -618,30 +559,31 @@ class ApiHandler(
                 distance_km
             FROM blood_banks
             WHERE blood_group = ?
-            ORDER BY distance_km ASC
         """, (group,))
 
         rows = cur.fetchall()
         conn.close()
 
-        banks = [
-            dict(row)
-            for row in rows
-        ]
-
         self.send_json({
             "blood_group":
                 group,
             "banks":
-                banks
+            [
+                dict(row)
+                for row in rows
+            ]
         })
 
 
 # ==========================
-# SERVER RUN
+# RUN SERVER
 # ==========================
 def run_server():
-    init_db()
+
+    if not os.path.exists(
+        DB_PATH
+    ):
+        init_db()
 
     port = int(
         os.environ.get(
@@ -656,7 +598,7 @@ def run_server():
     )
 
     print(
-        f"Backend running on port {port}"
+        f"Server running on port {port}"
     )
 
     server.serve_forever()
