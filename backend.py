@@ -7,17 +7,26 @@ from urllib.parse import urlparse
 DB_PATH = "nightcare.db"
 
 
+# ==========================
+# DATABASE CONNECTION
+# ==========================
 def get_db_connection():
-    conn = sqlite3.connect(DB_PATH, check_same_thread=False)
+    conn = sqlite3.connect(
+        DB_PATH,
+        check_same_thread=False
+    )
     conn.row_factory = sqlite3.Row
     return conn
 
 
+# ==========================
+# DATABASE INIT
+# ==========================
 def init_db():
     conn = get_db_connection()
     cur = conn.cursor()
 
-    # Users table
+    # USERS TABLE
     cur.execute("""
         CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -26,18 +35,18 @@ def init_db():
         )
     """)
 
-    # Doctors table
+    # DOCTORS TABLE
     cur.execute("""
         CREATE TABLE IF NOT EXISTS doctors (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT NOT NULL,
             speciality TEXT NOT NULL,
-            rating REAL,
-            distance_km REAL
+            rating REAL DEFAULT 0,
+            distance_km REAL DEFAULT 0
         )
     """)
 
-    # Ambulance bookings
+    # AMBULANCE BOOKINGS
     cur.execute("""
         CREATE TABLE IF NOT EXISTS ambulance_bookings (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -49,7 +58,7 @@ def init_db():
         )
     """)
 
-    # Blood banks
+    # BLOOD BANKS
     cur.execute("""
         CREATE TABLE IF NOT EXISTS blood_banks (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -60,29 +69,84 @@ def init_db():
         )
     """)
 
-    # Seed doctors
-    cur.execute("SELECT COUNT(*) as count FROM doctors")
+    # ==========================
+    # SEED DOCTORS
+    # ==========================
+    cur.execute(
+        "SELECT COUNT(*) as count FROM doctors"
+    )
+
     if cur.fetchone()["count"] == 0:
         doctors = [
-            ("Dr. Aditi Rao", "emergency", 4.9, 1.2),
-            ("Dr. Karan Mehta", "cardio", 4.8, 2.1),
-            ("Dr. Sana Ali", "pediatrics", 4.7, 0.9),
+            (
+                "Dr. Aditi Rao",
+                "emergency",
+                4.9,
+                1.2
+            ),
+            (
+                "Dr. Karan Mehta",
+                "cardio",
+                4.8,
+                2.1
+            ),
+            (
+                "Dr. Sana Ali",
+                "pediatrics",
+                4.7,
+                0.9
+            ),
         ]
 
         cur.executemany("""
-            INSERT INTO doctors(name, speciality, rating, distance_km)
+            INSERT INTO doctors(
+                name,
+                speciality,
+                rating,
+                distance_km
+            )
             VALUES (?, ?, ?, ?)
         """, doctors)
 
-    # Seed blood banks
-    cur.execute("SELECT COUNT(*) as count FROM blood_banks")
+    # ==========================
+    # SEED BLOOD BANKS
+    # ==========================
+    cur.execute(
+        "SELECT COUNT(*) as count FROM blood_banks"
+    )
+
     if cur.fetchone()["count"] == 0:
         blood_rows = [
-            ("City Blood Center", "A+", 6, 2.1),
-            ("City Blood Center", "O+", 4, 2.1),
-            ("Metro Blood Bank", "A+", 3, 3.4),
-            ("Metro Blood Bank", "O+", 2, 3.4),
-            ("Govt. Blood Bank", "A+", 0, 4.1),
+            (
+                "City Blood Center",
+                "A+",
+                6,
+                2.1
+            ),
+            (
+                "City Blood Center",
+                "O+",
+                4,
+                2.1
+            ),
+            (
+                "Metro Blood Bank",
+                "A+",
+                3,
+                3.4
+            ),
+            (
+                "Metro Blood Bank",
+                "O+",
+                2,
+                3.4
+            ),
+            (
+                "Govt. Blood Bank",
+                "A+",
+                0,
+                4.1
+            ),
         ]
 
         cur.executemany("""
@@ -99,50 +163,113 @@ def init_db():
     conn.close()
 
 
-class ApiHandler(BaseHTTPRequestHandler):
+# ==========================
+# API HANDLER
+# ==========================
+class ApiHandler(
+    BaseHTTPRequestHandler
+):
 
+    # -----------------------
+    # CORS
+    # -----------------------
     def _set_cors_headers(self):
-        self.send_header("Access-Control-Allow-Origin", "*")
-        self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
-        self.send_header("Access-Control-Allow-Headers", "Content-Type")
+        self.send_header(
+            "Access-Control-Allow-Origin",
+            "*"
+        )
 
-    def send_json(self, data, status=200):
-        response = json.dumps(data).encode("utf-8")
+        self.send_header(
+            "Access-Control-Allow-Methods",
+            "GET, POST, OPTIONS"
+        )
+
+        self.send_header(
+            "Access-Control-Allow-Headers",
+            "Content-Type"
+        )
+
+    # -----------------------
+    # SEND JSON RESPONSE
+    # -----------------------
+    def send_json(
+        self,
+        data,
+        status=200
+    ):
+        response = json.dumps(
+            data
+        ).encode("utf-8")
 
         self.send_response(status)
-        self._set_cors_headers()
-        self.send_header("Content-Type", "application/json")
-        self.send_header("Content-Length", str(len(response)))
-        self.end_headers()
 
+        self._set_cors_headers()
+
+        self.send_header(
+            "Content-Type",
+            "application/json"
+        )
+
+        self.send_header(
+            "Content-Length",
+            str(len(response))
+        )
+
+        self.end_headers()
         self.wfile.write(response)
 
+    # -----------------------
+    # READ BODY
+    # -----------------------
     def read_json_body(self):
-        length = int(self.headers.get("Content-Length", 0))
+        length = int(
+            self.headers.get(
+                "Content-Length",
+                0
+            )
+        )
 
         if length == 0:
             return {}
 
-        body = self.rfile.read(length).decode("utf-8")
+        body = self.rfile.read(
+            length
+        ).decode("utf-8")
 
         try:
             return json.loads(body)
+
         except json.JSONDecodeError:
             return {}
 
+    # -----------------------
+    # OPTIONS
+    # -----------------------
     def do_OPTIONS(self):
         self.send_response(200)
         self._set_cors_headers()
         self.end_headers()
 
+    # ==========================
+    # POST ROUTES
+    # ==========================
     def do_POST(self):
-        path = urlparse(self.path).path
+        path = urlparse(
+            self.path
+        ).path
 
         routes = {
-            "/api/login": self.handle_login,
-            "/api/symptom-checker": self.handle_symptom_checker,
-            "/api/ambulance/book": self.handle_ambulance_book,
-            "/api/blood/check": self.handle_blood_check,
+            "/api/login":
+                self.handle_login,
+
+            "/api/symptom-checker":
+                self.handle_symptom_checker,
+
+            "/api/ambulance/book":
+                self.handle_ambulance_book,
+
+            "/api/blood/check":
+                self.handle_blood_check,
         }
 
         handler = routes.get(path)
@@ -150,32 +277,67 @@ class ApiHandler(BaseHTTPRequestHandler):
         if handler:
             handler()
         else:
-            self.send_json({"error": "Not found"}, status=404)
+            self.send_json(
+                {"error": "Not found"},
+                status=404
+            )
 
+    # ==========================
+    # GET ROUTES
+    # ==========================
     def do_GET(self):
-        path = urlparse(self.path).path
+        path = urlparse(
+            self.path
+        ).path
 
         if path == "/api/doctors":
             self.handle_doctors()
-        else:
-            self.send_json({"error": "Not found"}, status=404)
 
+        elif path == "/api/users":
+            self.handle_users()
+
+        elif path == "/api/bookings":
+            self.handle_bookings()
+
+        else:
+            self.send_json(
+                {"error": "Not found"},
+                status=404
+            )
+
+    # ==========================
+    # LOGIN
+    # ==========================
     def handle_login(self):
         data = self.read_json_body()
 
-        phone = str(data.get("phone", "")).strip()
-        otp = str(data.get("otp", "")).strip()
+        phone = str(
+            data.get("phone", "")
+        ).strip()
+
+        otp = str(
+            data.get("otp", "")
+        ).strip()
 
         if not phone or not otp:
             self.send_json(
-                {"error": "phone and otp required"},
+                {
+                    "error":
+                    "phone and otp required"
+                },
                 status=400
             )
             return
 
-        if len(otp) != 6 or not otp.isdigit():
+        if (
+            len(otp) != 6
+            or not otp.isdigit()
+        ):
             self.send_json(
-                {"error": "invalid otp, must be 6 digits"},
+                {
+                    "error":
+                    "OTP must be 6 digits"
+                },
                 status=400
             )
             return
@@ -183,17 +345,22 @@ class ApiHandler(BaseHTTPRequestHandler):
         conn = get_db_connection()
         cur = conn.cursor()
 
-        cur.execute(
-            "INSERT OR IGNORE INTO users(phone) VALUES (?)",
-            (phone,)
-        )
+        cur.execute("""
+            INSERT OR IGNORE
+            INTO users(phone)
+            VALUES (?)
+        """, (phone,))
 
         conn.commit()
 
-        cur.execute(
-            "SELECT id, phone, created_at FROM users WHERE phone = ?",
-            (phone,)
-        )
+        cur.execute("""
+            SELECT
+                id,
+                phone,
+                created_at
+            FROM users
+            WHERE phone = ?
+        """, (phone,))
 
         row = cur.fetchone()
         conn.close()
@@ -203,118 +370,162 @@ class ApiHandler(BaseHTTPRequestHandler):
             "user": dict(row)
         })
 
-    def handle_symptom_checker(self):
+    # ==========================
+    # SYMPTOM CHECKER
+    # ==========================
+    def handle_symptom_checker(
+        self
+    ):
         data = self.read_json_body()
-        text = str(data.get("description", "")).lower()
+
+        text = str(
+            data.get(
+                "description",
+                ""
+            )
+        ).lower()
 
         if not text.strip():
             self.send_json({
-                "error": "description required",
-                "message": "Please describe at least one symptom"
+                "error":
+                "description required"
             }, status=400)
             return
 
         severity = "mild"
         urgency = "normal"
-        problem = "General viral / mild condition"
-
-        recommendation = (
-            "Monitor at home, hydrate well and "
-            "consult doctor if symptoms persist."
+        problem = (
+            "General viral condition"
         )
 
-        if any(word in text for word in [
-            "chest", "stroke", "unconscious"
-        ]):
+        recommendation = (
+            "Rest and hydrate."
+        )
+
+        if any(word in text
+               for word in [
+                   "chest",
+                   "stroke",
+                   "unconscious"
+               ]):
             severity = "critical"
             urgency = "emergency"
             problem = (
-                "Possible cardiac or neurological emergency"
+                "Possible cardiac emergency"
             )
             recommendation = (
-                "Immediate ambulance required. "
-                "Do NOT drive yourself. "
-                "Start CPR if not breathing."
+                "Call ambulance immediately."
             )
 
-        elif any(word in text for word in [
-            "breath", "difficulty breathing", "asthma"
-        ]):
-            severity = "high"
-            urgency = "urgent"
-            problem = "Breathing difficulty"
-
-            recommendation = (
-                "Use inhaler if prescribed and "
-                "seek emergency care if worsening."
-            )
-
-        elif "bleeding" in text or "blood" in text:
-            severity = "high"
-            urgency = "urgent"
-            problem = "Significant bleeding"
-
-            recommendation = (
-                "Apply firm pressure and "
-                "visit nearest emergency."
-            )
-
-        elif "fever" in text or "temperature" in text:
+        elif (
+            "fever" in text
+            or "temperature" in text
+        ):
             severity = "moderate"
             urgency = "normal"
-            problem = "Fever / infection-like symptoms"
-
+            problem = (
+                "Fever / infection"
+            )
             recommendation = (
-                "Hydrate and use paracetamol "
-                "if advised by doctor."
+                "Take medicine & rest."
             )
 
         self.send_json({
-            "possible_problem": problem,
-            "severity": severity,
-            "urgency": urgency,
-            "recommendation": recommendation
+            "possible_problem":
+                problem,
+            "severity":
+                severity,
+            "urgency":
+                urgency,
+            "recommendation":
+                recommendation
         })
 
+    # ==========================
+    # DOCTORS
+    # ==========================
     def handle_doctors(self):
         conn = get_db_connection()
         cur = conn.cursor()
 
         cur.execute("""
-            SELECT
-                id,
-                name,
-                speciality,
-                rating,
-                distance_km
+            SELECT *
             FROM doctors
             ORDER BY distance_km ASC
         """)
 
-        rows = cur.fetchall()   # FIXED BUG
+        rows = cur.fetchall()
         conn.close()
 
-        doctors = [dict(row) for row in rows]
+        doctors = [
+            dict(row)
+            for row in rows
+        ]
 
         self.send_json({
-            "doctors": doctors
+            "doctors":
+                doctors
         })
 
-    def handle_ambulance_book(self):
+    # ==========================
+    # USERS
+    # ==========================
+    def handle_users(self):
+        conn = get_db_connection()
+        cur = conn.cursor()
+
+        cur.execute("""
+            SELECT *
+            FROM users
+            ORDER BY id DESC
+        """)
+
+        rows = cur.fetchall()
+        conn.close()
+
+        users = [
+            dict(row)
+            for row in rows
+        ]
+
+        self.send_json({
+            "users":
+                users
+        })
+
+    # ==========================
+    # AMBULANCE BOOK
+    # ==========================
+    def handle_ambulance_book(
+        self
+    ):
         data = self.read_json_body()
 
-        phone = str(data.get("phone", "")).strip()
+        phone = str(
+            data.get(
+                "phone",
+                ""
+            )
+        ).strip()
+
         pickup = str(
-            data.get("pickup_location", "")
+            data.get(
+                "pickup_location",
+                ""
+            )
         ).strip()
 
         destination = str(
-            data.get("destination", "")
+            data.get(
+                "destination",
+                ""
+            )
         ).strip()
 
         if not pickup:
             self.send_json({
-                "error": "pickup_location required"
+                "error":
+                "pickup required"
             }, status=400)
             return
 
@@ -322,7 +533,8 @@ class ApiHandler(BaseHTTPRequestHandler):
         cur = conn.cursor()
 
         cur.execute("""
-            INSERT INTO ambulance_bookings(
+            INSERT INTO
+            ambulance_bookings(
                 user_phone,
                 pickup_location,
                 destination,
@@ -343,22 +555,56 @@ class ApiHandler(BaseHTTPRequestHandler):
 
         self.send_json({
             "status": "ok",
-            "booking_id": booking_id,
-            "eta_minutes": 5,
-            "message":
-                "Ambulance booked successfully."
+            "booking_id":
+                booking_id,
+            "eta_minutes": 5
         })
 
-    def handle_blood_check(self):
+    # ==========================
+    # BOOKINGS
+    # ==========================
+    def handle_bookings(self):
+        conn = get_db_connection()
+        cur = conn.cursor()
+
+        cur.execute("""
+            SELECT *
+            FROM ambulance_bookings
+            ORDER BY id DESC
+        """)
+
+        rows = cur.fetchall()
+        conn.close()
+
+        bookings = [
+            dict(row)
+            for row in rows
+        ]
+
+        self.send_json({
+            "bookings":
+                bookings
+        })
+
+    # ==========================
+    # BLOOD CHECK
+    # ==========================
+    def handle_blood_check(
+        self
+    ):
         data = self.read_json_body()
 
-        blood_group = str(
-            data.get("blood_group", "")
+        group = str(
+            data.get(
+                "blood_group",
+                ""
+            )
         ).strip().upper()
 
-        if not blood_group:
+        if not group:
             self.send_json({
-                "error": "blood_group required"
+                "error":
+                "blood_group required"
             }, status=400)
             return
 
@@ -373,28 +619,46 @@ class ApiHandler(BaseHTTPRequestHandler):
             FROM blood_banks
             WHERE blood_group = ?
             ORDER BY distance_km ASC
-        """, (blood_group,))
+        """, (group,))
 
         rows = cur.fetchall()
         conn.close()
 
+        banks = [
+            dict(row)
+            for row in rows
+        ]
+
         self.send_json({
-            "blood_group": blood_group,
-            "banks": [dict(row) for row in rows]
+            "blood_group":
+                group,
+            "banks":
+                banks
         })
 
 
+# ==========================
+# SERVER RUN
+# ==========================
 def run_server():
     init_db()
 
-    port = int(os.environ.get("PORT", 8000))
+    port = int(
+        os.environ.get(
+            "PORT",
+            8000
+        )
+    )
 
     server = HTTPServer(
         ("0.0.0.0", port),
         ApiHandler
     )
 
-    print(f"Backend running on port {port}")
+    print(
+        f"Backend running on port {port}"
+    )
+
     server.serve_forever()
 
 
